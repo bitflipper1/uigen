@@ -80,11 +80,7 @@ export function PreviewFrame() {
         if (iframeRef.current) {
           const iframe = iframeRef.current;
 
-          // Need both allow-scripts and allow-same-origin for blob URLs in import map
-          iframe.setAttribute(
-            "sandbox",
-            "allow-scripts allow-same-origin allow-forms"
-          );
+          iframe.setAttribute("sandbox", "allow-scripts allow-forms");
           iframe.srcdoc = previewHTML;
 
           setError(null);

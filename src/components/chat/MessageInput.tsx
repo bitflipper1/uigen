@@ -27,15 +27,18 @@ export function MessageInput({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="relative p-4 bg-white border-t border-neutral-200/60">
+    <form onSubmit={(e) => { e.preventDefault(); handleSubmit(e); }} className="relative p-4 bg-white border-t border-neutral-200/60">
       <div className="relative max-w-4xl mx-auto">
         <textarea
+          id="chat-input"
+          name="chat-input"
+          autoComplete="off"
           value={input}
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
           placeholder="Describe the React component you want to create..."
           disabled={isLoading}
-          className="w-full min-h-[80px] max-h-[200px] pl-4 pr-14 py-3.5 rounded-xl border border-neutral-200 bg-neutral-50/50 text-neutral-900 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-500/50 focus:bg-white transition-all placeholder:text-neutral-400 text-[15px] font-normal shadow-sm"
+          className="w-full min-h-[80px] max-h-[200px] pl-4 pr-16 py-3.5 rounded-xl border border-neutral-200 bg-neutral-50/50 text-neutral-900 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-500/50 focus:bg-white transition-all placeholder:text-neutral-400 text-[15px] font-normal shadow-sm"
           rows={3}
         />
         <button 

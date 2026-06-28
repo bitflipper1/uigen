@@ -79,8 +79,10 @@ export function createBlobURL(
   code: string,
   mimeType: string = "application/javascript"
 ): string {
-  const blob = new Blob([code], { type: mimeType });
-  return URL.createObjectURL(blob);
+  // Data URLs don't require allow-same-origin in the iframe sandbox (unlike blob URLs,
+  // which are bound to the parent origin). btoa only handles Latin1, so encode first.
+  const base64 = btoa(unescape(encodeURIComponent(code)));
+  return `data:${mimeType};base64,${base64}`;
 }
 
 export interface ImportMapResult {
@@ -313,6 +315,14 @@ export function createPreviewHTML(
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Preview</title>
+  <script>
+    // Suppress the Tailwind Play CDN production warning — this is a sandboxed preview iframe.
+    const _warn = console.warn.bind(console);
+    console.warn = (...args) => {
+      if (typeof args[0] === 'string' && args[0].startsWith('cdn.tailwindcss.com')) return;
+      _warn(...args);
+    };
+  </script>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     body {

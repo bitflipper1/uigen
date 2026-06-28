@@ -5,6 +5,7 @@ import {
   useContext,
   ReactNode,
   useEffect,
+  useState,
 } from "react";
 import { useChat as useAIChat } from "@ai-sdk/react";
 import { Message } from "ai";
@@ -22,6 +23,7 @@ interface ChatContextType {
   handleInputChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
   handleSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
   status: string;
+  error: string | null;
 }
 
 const ChatContext = createContext<ChatContextType | undefined>(undefined);
@@ -32,6 +34,7 @@ export function ChatProvider({
   initialMessages = [],
 }: ChatContextProps & { children: ReactNode }) {
   const { fileSystem, handleToolCall } = useFileSystem();
+  const [error, setError] = useState<string | null>(null);
 
   const {
     messages,
@@ -48,6 +51,10 @@ export function ChatProvider({
     },
     onToolCall: ({ toolCall }) => {
       handleToolCall(toolCall);
+    },
+    onError: (err) => {
+      console.error("Chat error:", err);
+      setError(err.message || "Something went wrong. Please try again.");
     },
   });
 
@@ -66,6 +73,7 @@ export function ChatProvider({
         handleInputChange,
         handleSubmit,
         status,
+        error,
       }}
     >
       {children}
