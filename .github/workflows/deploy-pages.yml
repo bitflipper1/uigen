@@ -52,6 +52,11 @@ jobs:
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
+        with:
+          # Turn Pages on automatically (with source = GitHub Actions) so no
+          # manual Settings step is needed. Requires the workflow's pages:write
+          # permission, which is granted above.
+          enablement: true
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
