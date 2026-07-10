@@ -1,0 +1,15 @@
+@import "tailwindcss";
+
+/* The shared components live outside this project's root, so tell Tailwind
+   where to scan for class names. Paths are relative to this CSS file. */
+@source "../../src/components/hotd";
+@source "../../src/lib/hotd";
+
+:root {
+  color-scheme: dark;
+}
+
+html,
+body {
+  background-color: #0a0a0a;
+}
