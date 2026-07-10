@@ -28,21 +28,86 @@ export const TEAMS: Record<Team, { label: string; dot: string; ring: string; tex
   },
 };
 
-export const SEASON = 1;
-export const EPISODE_COUNT = 10;
+// Episodes are addressed by a single *global* index that runs straight
+// through every season (S1 = 1-10, S2 = 11-18). This keeps all the
+// `fromEpisode` / `deathEpisode` gating a single comparable number while the
+// UI still shows a friendly "S2 · E4" label.
+export interface SeasonMeta {
+  season: number;
+  titles: string[];
+}
 
-export const EPISODE_TITLES: string[] = [
-  "The Heirs of the Dragon", // 1
-  "The Rogue Prince", // 2
-  "Second of His Name", // 3
-  "King of the Narrow Sea", // 4
-  "We Light the Way", // 5
-  "The Princess and the Queen", // 6
-  "Driftmark", // 7
-  "The Lord of the Tides", // 8
-  "The Green Council", // 9
-  "The Black Queen", // 10
+export const SEASONS: SeasonMeta[] = [
+  {
+    season: 1,
+    titles: [
+      "The Heirs of the Dragon", // 1
+      "The Rogue Prince", // 2
+      "Second of His Name", // 3
+      "King of the Narrow Sea", // 4
+      "We Light the Way", // 5
+      "The Princess and the Queen", // 6
+      "Driftmark", // 7
+      "The Lord of the Tides", // 8
+      "The Green Council", // 9
+      "The Black Queen", // 10
+    ],
+  },
+  {
+    season: 2,
+    titles: [
+      "A Son for a Son", // 11
+      "Rhaenyra the Cruel", // 12
+      "The Burning Mill", // 13
+      "The Red Dragon and the Gold", // 14
+      "Regent", // 15
+      "Smallfolk", // 16
+      "The Red Sowing", // 17
+      "The Queen Who Ever Was", // 18
+    ],
+  },
 ];
+
+export const EPISODE_COUNT = SEASONS.reduce((n, s) => n + s.titles.length, 0);
+
+// Flat list indexed by (global episode − 1). Handy for direct lookups.
+export const EPISODE_TITLES: string[] = SEASONS.flatMap((s) => s.titles);
+
+export interface EpisodeMeta {
+  season: number;
+  episode: number; // episode number within its season
+  title: string;
+  global: number;
+}
+
+/** Resolve a global episode index to its season / in-season number / title. */
+export function episodeMeta(global: number): EpisodeMeta {
+  let remaining = global;
+  for (const s of SEASONS) {
+    if (remaining <= s.titles.length) {
+      return {
+        season: s.season,
+        episode: remaining,
+        title: s.titles[remaining - 1],
+        global,
+      };
+    }
+    remaining -= s.titles.length;
+  }
+  const last = SEASONS[SEASONS.length - 1];
+  return {
+    season: last.season,
+    episode: last.titles.length,
+    title: last.titles[last.titles.length - 1],
+    global,
+  };
+}
+
+/** Short "S2 · E4"-style label for a global episode index. */
+export function episodeLabel(global: number): string {
+  const m = episodeMeta(global);
+  return `S${m.season} · E${m.episode}`;
+}
 
 export interface ArcBeat {
   episode: number;
@@ -153,6 +218,10 @@ export const CHARACTERS: Character[] = [
       { episode: 7, note: "Marries Daemon Targaryen after Laena's death." },
       { episode: 8, note: "Reconciles briefly with Alicent at Viserys's last supper." },
       { episode: 10, note: "Crowned Queen at Dragonstone — then learns her son Lucerys is dead." },
+      { episode: 11, note: "Grieving Lucerys, she is horrified to learn Daemon set the Blood-and-Cheese murder in motion." },
+      { episode: 12, note: "Slips into King's Landing in disguise to plead with Alicent for peace." },
+      { episode: 15, note: "Gambles on arming common-born 'dragonseeds' to out-dragon the Greens." },
+      { episode: 18, note: "Receives Alicent at Dragonstone, offering Aegon's surrender — as both hosts prepare for war." },
     ],
     initials: "R",
   },
@@ -175,6 +244,10 @@ export const CHARACTERS: Character[] = [
       { episode: 3, note: "Wins the war for the Stepstones and is hailed as 'King of the Narrow Sea'." },
       { episode: 7, note: "Weds Rhaenyra after his wife Laena's death." },
       { episode: 10, note: "Chokes Rhaenyra in rage over strategy as war looms." },
+      { episode: 11, note: "Sends the assassins 'Blood and Cheese' into the Red Keep for a son-for-a-son." },
+      { episode: 13, note: "Rides to a near-empty Harrenhal, takes the castle, and begins to see strange visions." },
+      { episode: 16, note: "Recruits Rivermen and dragonseeds while the witch Alys Rivers haunts his dreams." },
+      { episode: 18, note: "A vision of the future finally breaks his pride; he bends the knee to Rhaenyra." },
     ],
     initials: "D",
   },
@@ -198,6 +271,9 @@ export const CHARACTERS: Character[] = [
       { episode: 7, note: "Demands an eye for Aemond's; lunges at Rhaenyra with a blade." },
       { episode: 8, note: "Mishears Viserys's dying words as naming Aegon king." },
       { episode: 9, note: "Drives the Green Council to crown Aegon II." },
+      { episode: 12, note: "Secretly meets a disguised Rhaenyra, but cannot stop the war she helped start." },
+      { episode: 15, note: "Sidelined as Aemond seizes the regency; her influence collapses." },
+      { episode: 18, note: "Crosses to Dragonstone alone to offer up Aegon and King's Landing to end the bloodshed." },
     ],
     initials: "A",
   },
@@ -218,6 +294,9 @@ export const CHARACTERS: Character[] = [
     arc: [
       { episode: 6, note: "A dissolute young prince, largely ignored by his father." },
       { episode: 9, note: "Found hiding in the city, then crowned Aegon II before the realm." },
+      { episode: 11, note: "Bays for vengeance after Blood and Cheese murder his son and heir." },
+      { episode: 14, note: "Rides to Rook's Rest — and is grievously burned when Aemond turns dragonfire on friend and foe alike." },
+      { episode: 15, note: "Lies broken and comatose while his brother rules in his place." },
     ],
     initials: "Ae",
   },
@@ -238,6 +317,8 @@ export const CHARACTERS: Character[] = [
     arc: [
       { episode: 6, note: "A quiet, prophetic child fascinated by insects." },
       { episode: 8, note: "Now wed to her brother Aegon, with children of her own." },
+      { episode: 11, note: "Assassins force her to choose which of her children dies; her son Jaehaerys is taken." },
+      { episode: 14, note: "Refuses to be paraded as war propaganda; her dragon-dreams unsettle the court." },
     ],
     initials: "H",
   },
@@ -259,6 +340,9 @@ export const CHARACTERS: Character[] = [
       { episode: 6, note: "Mocked as the only dragonless child of his generation." },
       { episode: 7, note: "Claims Vhagar, the largest living dragon; loses an eye to Lucerys in the ensuing fight." },
       { episode: 10, note: "Loses control of Vhagar over Storm's End and kills Lucerys — the first blood of the war." },
+      { episode: 14, note: "At Rook's Rest he turns Vhagar's fire on Rhaenys AND his own brother, killing the Queen Who Never Was." },
+      { episode: 15, note: "Claims the regency and rules King's Landing with an iron, dragon-backed fist." },
+      { episode: 18, note: "Storms out as the Greens fracture, taking Vhagar to burn the Riverlands." },
     ],
     initials: "Am",
   },
@@ -297,6 +381,8 @@ export const CHARACTERS: Character[] = [
       { episode: 4, note: "Dismissed as Hand after warning Viserys about Rhaenyra." },
       { episode: 8, note: "Reinstated as Hand as Viserys weakens." },
       { episode: 9, note: "Orchestrates the Green Council and Aegon's coronation." },
+      { episode: 12, note: "Dismissed as Hand by a furious Aegon, who hands the pin to Criston Cole." },
+      { episode: 15, note: "Out of favor and out of the capital, his cautious counsel ignored by the young hawks." },
     ],
     initials: "O",
   },
@@ -316,6 +402,8 @@ export const CHARACTERS: Character[] = [
       { episode: 3, note: "Named to the Kingsguard; grows close to Rhaenyra." },
       { episode: 5, note: "Beats Joffrey Lonmouth to death at the royal wedding, then turns to Alicent." },
       { episode: 9, note: "Becomes the Greens' sworn protector as Aegon is crowned." },
+      { episode: 12, note: "Named Hand of the King while still Lord Commander — an unheard-of concentration of power." },
+      { episode: 14, note: "Springs the Rook's Rest trap that maims his own king and slays Rhaenys." },
     ],
     initials: "C",
   },
@@ -336,7 +424,10 @@ export const CHARACTERS: Character[] = [
     arc: [
       { episode: 1, note: "Passed over at the Great Council despite the senior claim." },
       { episode: 9, note: "Escapes captivity and bursts into Aegon's coronation on Meleys — but stays her hand." },
+      { episode: 13, note: "Flies guard over Dragonstone, urging Rhaenyra toward patience over vengeance." },
     ],
+    deathEpisode: 14,
+    deathNote: "Charges two dragons alone at Rook's Rest; she and Meleys are torn from the sky by Vhagar.",
     initials: "Rs",
   },
   {
@@ -355,6 +446,8 @@ export const CHARACTERS: Character[] = [
     arc: [
       { episode: 2, note: "Snubbed at court, he pushes for a marriage alliance with the crown." },
       { episode: 8, note: "Recovers from war wounds and reaffirms Rhaenyra's claim at Driftmark." },
+      { episode: 15, note: "Grieving Rhaenys, he takes a shine to two lowborn ship's boys of Hull — Addam and Alyn." },
+      { episode: 18, note: "Named Hand of the Queen, binding the Velaryon fleet firmly to Rhaenyra's cause." },
     ],
     initials: "Co",
   },
@@ -415,6 +508,8 @@ export const CHARACTERS: Character[] = [
     arc: [
       { episode: 6, note: "Bright and dutiful, though whispers question his parentage." },
       { episode: 10, note: "Flies to the Eyrie and Winterfell to rally the North to his mother's cause." },
+      { episode: 13, note: "Chafes at being kept from battle while his mother rules cautiously." },
+      { episode: 17, note: "Comes around to the dragonseed plan once he sees the wild dragons claimed for the Blacks." },
     ],
     initials: "J",
   },
@@ -490,8 +585,128 @@ export const CHARACTERS: Character[] = [
     arc: [
       { episode: 1, note: "Daemon's confidante and lover in the streets of King's Landing." },
       { episode: 9, note: "Now commands a spy network beneath the capital." },
+      { episode: 12, note: "Saved from the burning of King's Landing's rats' nests, she grows close to Rhaenyra." },
+      { episode: 16, note: "Becomes Rhaenyra's mistress of whisperers, turning the smallfolk toward the Blacks." },
     ],
     initials: "M",
+  },
+  {
+    id: "baela",
+    name: "Baela Targaryen",
+    house: "Targaryen",
+    team: "black",
+    allegianceKnownFrom: 11,
+    claim: "Daemon's daughter; betrothed to Jacaerys",
+    goal: "Ride to war for her family aboard her dragon",
+    dragonId: "moondancer",
+    relationships: [
+      { label: "Daughter of", toId: "daemon" },
+      { label: "Betrothed of", toId: "jacaerys" },
+    ],
+    arc: [
+      { episode: 11, note: "Flies dawn patrols over Dragonstone on her swift young dragon, Moondancer." },
+      { episode: 14, note: "Scouts the enemy and narrowly evades Vhagar in the skies." },
+    ],
+    initials: "Ba",
+  },
+  {
+    id: "rhaena",
+    name: "Rhaena Targaryen",
+    house: "Targaryen",
+    team: "black",
+    allegianceKnownFrom: 11,
+    claim: "Daemon's daughter; as yet a dragonless dragon-rider",
+    goal: "Claim a dragon of her own and prove her worth",
+    relationships: [
+      { label: "Daughter of", toId: "daemon" },
+      { label: "Sister of", toId: "baela" },
+    ],
+    arc: [
+      { episode: 13, note: "Sent to the Vale escorting Rhaenyra's youngest sons, feeling left behind." },
+      { episode: 18, note: "Tracks the wild dragon Sheepstealer through the Vale, determined to tame it." },
+    ],
+    initials: "Rh",
+  },
+  {
+    id: "addam",
+    name: "Addam of Hull",
+    house: "Velaryon (baseborn)",
+    team: "black",
+    allegianceKnownFrom: 16,
+    claim: "A lowborn shipwright with the blood of the dragon",
+    goal: "Rise from the docks to a place among lords and riders",
+    dragonId: "seasmoke",
+    relationships: [
+      { label: "Rumored son of", toId: "corlys" },
+    ],
+    arc: [
+      { episode: 15, note: "A Hull ship's boy, quietly noticed by Lord Corlys." },
+      { episode: 16, note: "Answers Seasmoke's call and becomes the first dragonseed to claim a dragon." },
+    ],
+    initials: "Ad",
+  },
+  {
+    id: "hugh",
+    name: "Hugh Hammer",
+    house: "—",
+    team: "black",
+    allegianceKnownFrom: 17,
+    claim: "A blacksmith of King's Landing with dragon blood",
+    goal: "A better life for his family — and perhaps far more",
+    dragonId: "vermithor",
+    relationships: [],
+    arc: [
+      { episode: 16, note: "A struggling smith drawn by Rhaenyra's open call for dragonseeds." },
+      { episode: 17, note: "Survives the Red Sowing and claims the mighty Vermithor, the Bronze Fury." },
+    ],
+    initials: "Hu",
+  },
+  {
+    id: "ulf",
+    name: "Ulf the White",
+    house: "—",
+    team: "black",
+    allegianceKnownFrom: 17,
+    claim: "A boastful tavern drunk of Targaryen bastard stock",
+    goal: "Wine, glory, and a dragon to brag about",
+    dragonId: "silverwing",
+    relationships: [],
+    arc: [
+      { episode: 16, note: "Talks endlessly of his royal blood over cups of wine." },
+      { episode: 17, note: "Improbably survives the sowing and claims old Silverwing." },
+    ],
+    initials: "Ul",
+  },
+  {
+    id: "alys",
+    name: "Alys Rivers",
+    house: "Strong (baseborn)",
+    team: "green",
+    allegianceKnownFrom: 13,
+    claim: "A witch-woman of Harrenhal who sees what is to come",
+    goal: "Unknown — she speaks in riddles and prophecy",
+    relationships: [],
+    arc: [
+      { episode: 13, note: "Haunts the ruins of Harrenhal, unsettling Daemon with visions of his fate." },
+      { episode: 16, note: "Binds Daemon in dreams, keeping him from the war she says he is not ready for." },
+    ],
+    initials: "Al",
+  },
+  {
+    id: "cregan",
+    name: "Cregan Stark",
+    house: "Stark",
+    team: "black",
+    allegianceKnownFrom: 11,
+    claim: "Lord of Winterfell, Warden of the North",
+    goal: "Honor his house's oath to Rhaenyra's claim",
+    relationships: [
+      { label: "Sworn ally of", toId: "jacaerys" },
+    ],
+    arc: [
+      { episode: 11, note: "Pledges Northern swords to Rhaenyra, promising a vanguard of graybeards and green boys." },
+    ],
+    initials: "Cr",
   },
 ];
 
@@ -526,6 +741,8 @@ export const DRAGONS: Dragon[] = [
     id: "meleys",
     name: "Meleys",
     riderHistory: [{ fromEpisode: 1, riderId: "rhaenys" }],
+    deathEpisode: 14,
+    deathNote: "Killed with her rider Rhaenys at the Battle of Rook's Rest.",
     notes: "'The Red Queen' — famously fast.",
   },
   {
@@ -537,8 +754,12 @@ export const DRAGONS: Dragon[] = [
   {
     id: "seasmoke",
     name: "Seasmoke",
-    riderHistory: [{ fromEpisode: 1, riderId: "laenor" }],
-    notes: "A silver-grey dragon; riderless after Laenor departs.",
+    riderHistory: [
+      { fromEpisode: 1, riderId: "laenor" },
+      { fromEpisode: 7, riderId: null, note: "Riderless after Laenor slips away." },
+      { fromEpisode: 16, riderId: "addam", note: "Claimed by the dragonseed Addam of Hull." },
+    ],
+    notes: "A silver-grey dragon; the first to take a lowborn rider.",
   },
   {
     id: "dreamfyre",
@@ -566,6 +787,38 @@ export const DRAGONS: Dragon[] = [
     riderHistory: [{ fromEpisode: 6, riderId: "daeron" }],
     notes: "'The Blue Queen' — Daeron's dragon in Oldtown.",
   },
+  {
+    id: "moondancer",
+    name: "Moondancer",
+    riderHistory: [{ fromEpisode: 11, riderId: "baela" }],
+    notes: "A small, slender, and nimble young she-dragon.",
+  },
+  {
+    id: "vermithor",
+    name: "Vermithor",
+    riderHistory: [
+      { fromEpisode: 16, riderId: null, note: "The great unclaimed dragon slumbering beneath Dragonstone." },
+      { fromEpisode: 17, riderId: "hugh", note: "Claimed by Hugh Hammer at the Red Sowing." },
+    ],
+    notes: "'The Bronze Fury' — second only to Vhagar in size.",
+  },
+  {
+    id: "silverwing",
+    name: "Silverwing",
+    riderHistory: [
+      { fromEpisode: 16, riderId: null, note: "Old Queen Alysanne's former mount, long wild." },
+      { fromEpisode: 17, riderId: "ulf", note: "Claimed by Ulf the White at the Red Sowing." },
+    ],
+    notes: "A gentle old she-dragon.",
+  },
+  {
+    id: "sheepstealer",
+    name: "Sheepstealer",
+    riderHistory: [
+      { fromEpisode: 18, riderId: null, note: "A wild, ill-tempered dragon stalked by Rhaena in the Vale." },
+    ],
+    notes: "Unclaimed and famously vicious.",
+  },
 ];
 
 // ---------------------------------------------------------------------------
@@ -585,6 +838,13 @@ export const RIVALRIES: Rivalry[] = [
   { fromId: "daemon", toId: "rhaenyra", label: "fights for", kind: "ally", knownFrom: 7 },
   { fromId: "alicent", toId: "aegon", label: "crowns", kind: "ally", knownFrom: 9 },
   { fromId: "criston", toId: "alicent", label: "serves", kind: "ally", knownFrom: 5 },
+  // Season 2
+  { fromId: "daemon", toId: "aegon", label: "struck at the family of", kind: "hostile", knownFrom: 11 },
+  { fromId: "cregan", toId: "rhaenyra", label: "pledges to", kind: "ally", knownFrom: 11 },
+  { fromId: "alys", toId: "daemon", label: "ensnares", kind: "hostile", knownFrom: 13 },
+  { fromId: "aemond", toId: "rhaenys", label: "killed", kind: "hostile", knownFrom: 14 },
+  { fromId: "aemond", toId: "aegon", label: "betrayed", kind: "hostile", knownFrom: 14 },
+  { fromId: "addam", toId: "rhaenyra", label: "flies for", kind: "ally", knownFrom: 16 },
 ];
 
 // ---------------------------------------------------------------------------
@@ -689,6 +949,88 @@ export const EPISODE_NOTES: EpisodeNote[] = [
       { name: "Prince Lucerys Velaryon", how: "Killed with his dragon Arrax over Storm's End by Vhagar." },
     ],
     whyItMatters: "The first dragon-blood is spilled. There is no going back — the Dance of the Dragons has begun.",
+  },
+  {
+    episode: 11,
+    whatChanged: [
+      "Grieving Lucerys, Daemon sends assassins into the Red Keep for a son-for-a-son.",
+      "The North and the Vale pledge to Rhaenyra; Cregan Stark promises an army.",
+    ],
+    deaths: [
+      { name: "Prince Jaehaerys", how: "The child heir is beheaded in his bed by 'Blood and Cheese'." },
+    ],
+    whyItMatters: "The war turns personal and monstrous — and Rhaenyra is blamed for a murder she never ordered.",
+  },
+  {
+    episode: 12,
+    whatChanged: [
+      "Aegon, hungry for war, dismisses Otto and makes Criston Cole his Hand.",
+      "Rhaenyra secretly enters King's Landing to beg Alicent for peace — and fails.",
+    ],
+    deaths: [
+      { name: "Ser Arryk & Ser Erryk Cargyll", how: "The Kingsguard twins are set against each other and die by each other's swords." },
+    ],
+    whyItMatters: "The last door to peace closes; both courts commit fully to a war of dragons.",
+  },
+  {
+    episode: 13,
+    whatChanged: [
+      "Daemon rides to a nearly empty Harrenhal, seizes it, and begins to see visions.",
+      "Green and Black armies skirmish in the Riverlands as houses pick sides.",
+    ],
+    deaths: [],
+    whyItMatters: "Daemon drifts from Rhaenyra's war while the Greens plot a strike to prove their dragons' worth.",
+  },
+  {
+    episode: 14,
+    whatChanged: [
+      "The Greens spring a trap at Rook's Rest; Aegon flies in against Aemond's advice.",
+      "Aemond turns Vhagar's fire on the battlefield without care for friend or foe.",
+    ],
+    deaths: [
+      { name: "Princess Rhaenys & Meleys", how: "Overwhelmed by Vhagar and Sunfyre at Rook's Rest." },
+    ],
+    whyItMatters: "The first great dragon-battle costs the Blacks Rhaenys — and leaves Aegon burned and broken by his own brother.",
+  },
+  {
+    episode: 15,
+    whatChanged: [
+      "With Aegon comatose, Aemond seizes the regency and rules by fear.",
+      "Facing a dragon deficit, Rhaenyra resolves to seek riders among the smallfolk.",
+    ],
+    deaths: [
+      { name: "Ser Steffon Darklyn", how: "Burned alive attempting to claim the dragon Seasmoke." },
+    ],
+    whyItMatters: "Aemond becomes the true power in King's Landing, and Rhaenyra bets everything on a heretical gamble.",
+  },
+  {
+    episode: 16,
+    whatChanged: [
+      "Rhaenyra opens a call for lowborn 'dragonseeds' to try to claim wild dragons.",
+      "Addam of Hull answers Seasmoke and becomes the first common-born dragonrider.",
+    ],
+    deaths: [],
+    whyItMatters: "A queen turning to the smallfolk shatters centuries of Valyrian custom — and could win her the war.",
+  },
+  {
+    episode: 17,
+    whatChanged: [
+      "At the Red Sowing, hopefuls are burned by the dozen trying to claim Vermithor.",
+      "Hugh Hammer claims Vermithor and Ulf the White claims Silverwing for the Blacks.",
+    ],
+    deaths: [
+      { name: "Scores of dragonseeds", how: "Incinerated in the pit while trying to claim the great dragons." },
+    ],
+    whyItMatters: "Two more of the world's largest dragons now fly for Rhaenyra, tilting the balance of the war.",
+  },
+  {
+    episode: 18,
+    whatChanged: [
+      "Both sides muster armies and dragons as the realm braces for open war.",
+      "Daemon finally bends the knee to Rhaenyra; Alicent crosses to Dragonstone to sue for peace.",
+    ],
+    deaths: [],
+    whyItMatters: "The board is set: full-scale war is one spark away, and even a surrender offer may not stop it.",
   },
 ];
 

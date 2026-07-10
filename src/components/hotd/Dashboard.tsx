@@ -139,7 +139,7 @@ export function Dashboard() {
         </div>
 
         <footer className="mt-10 border-t border-white/10 pt-4 text-center text-[11px] text-neutral-600">
-          A fan-made “CliffsNotes” dashboard · Season {1} · Built with UIGen. Character and story
+          A fan-made “CliffsNotes” dashboard · Seasons 1–2 · Built with UIGen. Character and story
           details belong to their respective creators.
         </footer>
       </div>

@@ -1,4 +1,4 @@
-import { EPISODE_NOTES, EPISODE_TITLES } from "@/lib/hotd/data";
+import { EPISODE_NOTES, episodeMeta } from "@/lib/hotd/data";
 import { Panel, SectionHeading } from "./shared";
 
 export function EpisodeNotes({ watched }: { watched: number }) {
@@ -14,18 +14,20 @@ export function EpisodeNotes({ watched }: { watched: number }) {
       />
 
       <div className="flex flex-col gap-4">
-        {notes.map((n) => (
+        {notes.map((n) => {
+          const m = episodeMeta(n.episode);
+          return (
           <details
             key={n.episode}
             open={n.episode === watched}
             className="group rounded-xl border border-white/10 bg-white/[0.02]"
           >
             <summary className="flex cursor-pointer list-none items-center gap-3 px-4 py-3">
-              <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-amber-400/15 font-mono text-xs font-semibold text-amber-200">
-                {n.episode}
+              <span className="flex h-7 shrink-0 items-center justify-center gap-0.5 rounded-full bg-amber-400/15 px-2 font-mono text-[11px] font-semibold text-amber-200">
+                S{m.season}·E{m.episode}
               </span>
               <span className="flex-1 text-sm font-medium text-neutral-100">
-                {EPISODE_TITLES[n.episode - 1]}
+                {m.title}
               </span>
               <span className="text-neutral-500 transition-transform group-open:rotate-90">
                 ›
@@ -71,7 +73,8 @@ export function EpisodeNotes({ watched }: { watched: number }) {
               </div>
             </div>
           </details>
-        ))}
+          );
+        })}
       </div>
     </Panel>
   );

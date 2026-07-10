@@ -1,4 +1,4 @@
-import { EPISODE_TITLES } from "@/lib/hotd/data";
+import { episodeMeta } from "@/lib/hotd/data";
 import { Panel, SectionHeading } from "./shared";
 
 // A five-minute "state of play" snapshot for the most recent episode watched.
@@ -91,6 +91,66 @@ const SNAPSHOTS: Record<number, Snapshot> = {
       "Which side can rally more dragons and swords first.",
     ],
   },
+  11: {
+    youAreHere:
+      "A son for a son: Blood and Cheese have murdered Aegon's heir, and the war turns savage.",
+    blackControls: "Dragonstone, most of the dragons, and now pledges from the North and the Vale.",
+    greenControls: "King's Landing and the Iron Throne — but a court baying for revenge.",
+    daemon: "Estranged from Rhaenyra after ordering the murder that horrified her.",
+    conflicts: [
+      "Rhaenyra is blamed for a child-killing she never sanctioned.",
+      "Aegon wants to answer with fire; his council wants patience.",
+      "Both sides scramble to win the great houses to their banners.",
+    ],
+  },
+  14: {
+    youAreHere:
+      "Rook's Rest: the first great dragon-battle has cost the Blacks Rhaenys — and burned King Aegon.",
+    blackControls: "Dragonstone and the fleet, but now down a dragon and its finest rider.",
+    greenControls: "The capital and the field at Rook's Rest — at a terrible price.",
+    daemon: "Adrift at Harrenhal, lost in visions while the war rages without him.",
+    conflicts: [
+      "Aemond burned his own brother — who truly rules the Greens now?",
+      "Rhaenyra has lost Rhaenys and is outmatched in dragons.",
+      "Grief and paranoia harden both queens against any peace.",
+    ],
+  },
+  15: {
+    youAreHere:
+      "Aemond rules as regent over a comatose Aegon, while Rhaenyra gambles on lowborn dragonriders.",
+    blackControls: "Dragonstone — and a heretical plan to claim wild dragons with common blood.",
+    greenControls: "King's Landing, ruled by fear under Prince Regent Aemond.",
+    daemon: "Bound by the witch Alys Rivers's visions at Harrenhal.",
+    conflicts: [
+      "Aemond's cruelty is alienating his own allies.",
+      "Can smallfolk 'dragonseeds' really tame the wild dragons?",
+      "The Blacks must close the dragon gap or lose the war.",
+    ],
+  },
+  17: {
+    youAreHere:
+      "The Red Sowing: at great cost, the Blacks have claimed Vermithor and Silverwing for new riders.",
+    blackControls: "Dragonstone and now four more dragons than a month ago.",
+    greenControls: "The capital and Vhagar — still deadly, but no longer unmatched.",
+    daemon: "Slowly waking to his duty as Harrenhal's garrison swells.",
+    conflicts: [
+      "Two more giant dragons now fly for Rhaenyra.",
+      "Lowborn riders unsettle lords on both sides of the war.",
+      "The balance of dragons has swung — the Greens must respond.",
+    ],
+  },
+  18: {
+    youAreHere:
+      "Armies and dragons mass on every side; Daemon has knelt, and Alicent comes to sue for peace.",
+    blackControls: "Dragonstone, the fleet, the North and Vale, and a growing dragon host.",
+    greenControls: "King's Landing and the throne — but a fracturing, frightened court.",
+    daemon: "Reconciled at last, he has bent the knee to Queen Rhaenyra.",
+    conflicts: [
+      "Full-scale war is one spark from igniting across the realm.",
+      "Can Alicent's surrender offer stop the coming slaughter?",
+      "With the Greens split, does Aemond answer to anyone now?",
+    ],
+  },
 };
 
 function snapshotFor(watched: number): { snap: Snapshot; episode: number } {
@@ -104,13 +164,14 @@ function snapshotFor(watched: number): { snap: Snapshot; episode: number } {
 
 export function PreviouslyOn({ watched }: { watched: number }) {
   const { snap, episode } = snapshotFor(watched);
+  const m = episodeMeta(episode);
 
   return (
     <Panel className="border-amber-400/20 bg-gradient-to-b from-amber-950/20 to-neutral-900/60">
       <SectionHeading
         glyph="🧠"
         title="Previously On… in Five Minutes"
-        subtitle={`Refreshed as of Episode ${episode}: “${EPISODE_TITLES[episode - 1]}”`}
+        subtitle={`Refreshed as of S${m.season} · E${m.episode}: “${m.title}”`}
       />
 
       <div className="mb-4 rounded-xl border border-amber-400/20 bg-amber-400/[0.06] p-3">
