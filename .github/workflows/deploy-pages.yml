@@ -51,12 +51,12 @@ jobs:
         run: npm run build
 
       - name: Configure Pages
+        # NOTE: Pages must be enabled once by a repo admin first —
+        # Settings → Pages → Build and deployment → Source: "GitHub Actions".
+        # The default GITHUB_TOKEN cannot enable Pages itself (it returns
+        # "Resource not accessible by integration"), so `enablement` is left off.
+        # After the one-time toggle, every push to main redeploys automatically.
         uses: actions/configure-pages@v5
-        with:
-          # Turn Pages on automatically (with source = GitHub Actions) so no
-          # manual Settings step is needed. Requires the workflow's pages:write
-          # permission, which is granted above.
-          enablement: true
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
